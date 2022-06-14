@@ -7,15 +7,18 @@
             :src="getCampaignLogo(campaign)"
             :alt="'Campaign logo for ' + campaign.name"
             height="200px"
-          ></v-img>
+          />
 
-          <v-card-title v-text="campaign.name"></v-card-title>
+          <v-card-title>
+            <p>
+              {{ campaign.name }}
+            </p>
+          </v-card-title>
 
           <v-card-subtitle
             v-text="campaign.organization"
             style="text-align: left"
-          >
-          </v-card-subtitle>
+          />
           <v-card-actions>
             <a :href="'//' + campaign.page_url" target="_blank">
               {{ campaign.page_url }}
