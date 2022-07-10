@@ -15,6 +15,64 @@
               ></v-text-field>
             </v-form>
 
+            <v-row>
+              <v-btn
+                rounded
+                dark
+                :style="{
+                  backgroundColor:
+                    currentFilter === 'country' ? 'blue !important' : 'white',
+                  color: currentFilter === 'country' ? 'white' : 'black'
+                }"
+                v-on:click="FilterList('country')"
+              >
+                Federal
+              </v-btn>
+
+              <v-btn
+                rounded
+                dark
+                :style="{
+                  backgroundColor:
+                    currentFilter === 'locality' ? 'blue !important' : 'white',
+                  color: currentFilter === 'locality' ? 'white' : 'black'
+                }"
+                v-on:click="FilterList('locality')"
+              >
+                Local
+              </v-btn>
+              <v-btn
+                rounded
+                dark
+                :style="{
+                  backgroundColor:
+                    currentFilter === 'administrativeArea1'
+                      ? 'blue !important'
+                      : 'white',
+                  color:
+                    currentFilter === 'administrativeArea1' ? 'white' : 'black'
+                }"
+                v-on:click="FilterList('administrativeArea1')"
+              >
+                State
+              </v-btn>
+              <v-btn
+                rounded
+                dark
+                :style="{
+                  backgroundColor:
+                    currentFilter === 'administrativeArea2'
+                      ? 'blue !important'
+                      : 'white',
+                  color:
+                    currentFilter === 'administrativeArea2' ? 'white' : 'black'
+                }"
+                v-on:click="FilterList('administrativeArea2')"
+              >
+                County
+              </v-btn>
+            </v-row>
+
             <v-btn
               :to="{
                 name: 'Reps',
@@ -71,19 +129,18 @@
 import RepresentativeCard from '@/components/RepresentativeCard.vue'
 import TakeAction from '@/components/TakeAction.vue'
 import axios from 'axios'
-
 export default {
     name: 'SearchReps',
     components: {
         RepresentativeCard,
         TakeAction
     },
-
     data () {
         return {
             letterBody: '',
             selectedRep: {},
             congressMembers: [],
+            currentFilter: String,
             hasContent: true,
             postalCode: this.$route.params.postalCode || '',
             listVisible: false,
@@ -107,14 +164,42 @@ export default {
                 const res = await axios.get(
                     '/api/representatives/' + this.postalCode
                 )
+
+
                 this.congressMembers = res.data
                 this.hasContent = true
-                console.log(res.data)
+                // console.log(res.data)
                 this.listVisible=true
                 } catch (e) {
                 console.error(e)
             }
-        }
+        },
+         async FilterList(level) {
+            this.currentFilter = level;
+            try {
+                const params = {};
+                if (this.currentFilter != null) {
+                  params.filter = this.currentFilter
+                }
+                console.log(params)
+
+
+                const res = await axios.get(
+                    '/api/representatives/' + this.postalCode,
+                    {
+                      params
+                      }
+                )
+
+             console.log(res)
+                this.congressMembers = res.data
+
+
+                } catch (e) {
+                console.error(e)
+            }
+         }
+
     }
 }
 </script>
