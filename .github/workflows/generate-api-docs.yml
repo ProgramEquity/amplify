@@ -1,0 +1,57 @@
+name: Generate OpenAPI Documentation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'openapi.yml'
+      - docs/bundled_api_docs/
+
+jobs:
+  bundle-and-lint-spec:
+    runs-on: ubuntu-latest
+    name: Lint OpenAPI Spec
+    steps:
+      - uses: actions/checkout@v2
+      - name: Lint OpenAPI Spec
+        uses: trybeapp/redocly-openapi-cli-github-action@v0.0.1
+        with:
+          args: 'lint openapi.yml --extends=minimal --skip-rule=no-empty-servers'
+      - uses: mshick/add-pr-comment@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          message: |
+            Looks like you've updated the OpenAPI spec! Make sure to:
+              - check the output of the `Lint Open API Spec` action 
+              - run `script/lint-and-bundle-openapi-schema.sh` and commit any resulting changes.
+  upload-openapi-spec:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Upload openapi.yml
+        uses: actions/upload-artifact@v2
+        with:
+          name: spec-file
+          path: openapi.yml
+  generate-openapi-ui:
+    name: Generate Swagger UI and Deploy to Pages
+    needs: upload-openapi-spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download openapi.yml
+        uses: actions/download-artifact@v2
+        with:
+          name: spec-file
+
+      - name: Generate Swagger UI
+        uses: Legion2/swagger-ui-action@v1
+        with:
+          output: api-docs
+          spec-file: openapi.yml
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: api-docs
